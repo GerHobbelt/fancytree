@@ -853,7 +853,7 @@ FancytreeNode.prototype = /** @lends FancytreeNode# */{
 			}
 			return true;
 		}
-		return ( this.children && this.children.length );
+        return !!this.children;
 	},
 	/** Return true if node has keyboard focus.
 	 * @returns {boolean}
