@@ -3176,7 +3176,7 @@ $.extend(Fancytree.prototype,
 		flag = (flag !== false);
 
 		// node.debug("nodeSetExpanded(" + flag + ")");
-		
+
 		// save the nodeIds of all expanded nodes to reload the tree in that state
 		// if expanded: save nodeId to global map (nodeId: ParentPath)
 		// if collapse: remove nodeId 
@@ -3233,13 +3233,13 @@ $.extend(Fancytree.prototype,
 					ctx.tree._triggerNodeEvent(flag ? "expand" : "collapse", ctx);
 				}
 			}
-			
-			
+
+
 			// do callback if defined
 			if (ctx.tree.options.onExpandCallBack) {
 			    ctx.tree.options.onExpandCallBack(node, flag);
 			}
-			
+
 			// check for option openHierarchy recursively
 			console.log("iam here:" + node.key 
 			        + " level:" + node.getLevel() 

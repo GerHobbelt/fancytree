@@ -8,7 +8,7 @@
  * https://github.com/mar10/fancytree/wiki/LicenseInfo
  *
  * @version 2.4.0
- * @date 2014-09-21T13:14
+ * @date 2015-08-02T13:11
  */
 
 /** Core Fancytree module.
@@ -297,6 +297,7 @@ function FancytreeNode(parent, obj){
 	// TODO: handle obj.focus = true
 	// Create child nodes
 	this.children = null;
+    this.mapChildren = [];
 	cl = obj.children;
 	if(cl && cl.length){
 		this._setChildren(cl);
@@ -335,8 +336,12 @@ FancytreeNode.prototype = /** @lends FancytreeNode# */{
 	_setChildren: function(children){
 		_assert(children && (!this.children || this.children.length === 0), "only init supported");
 		this.children = [];
+        this.mapChildren = [];
 		for(var i=0, l=children.length; i<l; i++){
-			this.children.push(new FancytreeNode(this, children[i]));
+		    // add new child to list and map
+		    var newChild = new FancytreeNode(this, children[i]);
+            this.mapChildren[newChild.key] = newChild;
+			this.children.push(newChild);
 		}
 	},
 	/**
@@ -359,9 +364,13 @@ FancytreeNode.prototype = /** @lends FancytreeNode# */{
 		}
 		if(!this.children){
 			this.children = [];
+	        this.mapChildren = [];
 		}
 		for(i=0, l=children.length; i<l; i++){
-			nodeList.push(new FancytreeNode(this, children[i]));
+		    // add new child to list and map
+            var newChild = new FancytreeNode(this, children[i]);
+            this.mapChildren[newChild.key] = newChild;
+            nodeList.push(newChild);
 		}
 		firstNode = nodeList[0];
 		if(insertBefore == null){
@@ -1647,8 +1656,8 @@ FancytreeNode.prototype = /** @lends FancytreeNode# */{
 			res = fn(node);
 			if( res === false || res === "skip" ) {
 				return _recursion ? res : _getResolvedPromise();
-			}
 		}
+			}
 		if( !node.children && !node.lazy ) {
 			return _getResolvedPromise();
 		}
@@ -3168,7 +3177,13 @@ $.extend(Fancytree.prototype,
 
 		// node.debug("nodeSetExpanded(" + flag + ")");
 
-		if((node.expanded && flag) || (!node.expanded && !flag)){
+		// save the nodeIds of all expanded nodes to reload the tree in that state
+		// if expanded: save nodeId to global map (nodeId: ParentPath)
+		// if collapse: remove nodeId 
+		// TODO
+
+		// if callOpts.recursively -> do it nevertheless everything seems done
+		if(((node.expanded && flag) || (!node.expanded && !flag)) && ! callOpts.recursively ){
 			// Nothing to do
 			// node.debug("nodeSetExpanded(" + flag + "): nothing to do");
 			return _getResolvedPromise(node);
@@ -3218,6 +3233,78 @@ $.extend(Fancytree.prototype,
 					ctx.tree._triggerNodeEvent(flag ? "expand" : "collapse", ctx);
 				}
 			}
+
+
+			// do callback if defined
+			if (ctx.tree.options.onExpandCallBack) {
+			    ctx.tree.options.onExpandCallBack(node, flag);
+			}
+
+			// check for option openHierarchy recursively
+			console.log("iam here:" + node.key 
+			        + " level:" + node.getLevel() 
+			        + " min:" + callOpts.minExpandLevel 
+			        + " flg:" + flag);
+			if (callOpts.recursively) {
+			    if (flag && node.getLevel() < callOpts.minExpandLevel) {
+                    // recursively open while < minExpandLevel
+                    console.log("recursively do all children:" + node.key);
+                    for (var nodeId in node.children) {
+                        var nextNode = node.children[nodeId];
+                        console.log("recursively got nextNode:" + nextNode.key);
+                        console.log("recursively start setExpanded:" + nextNode.key);
+                        nextNode.setExpanded(flag, callOpts);
+                    }
+			    } else if (flag && node.getLevel() >= callOpts.minExpandLevel) {
+                    console.log("minExpandLevel reached - close all children:" + node.key);
+                    var newOpts = {};
+                    newOpts.recursively = false;
+                    newOpts.activateLastNode = callOpts.activateLastNode;
+                    for (var nodeId in node.children) {
+                        var nextNode = node.children[nodeId];
+                        console.log("got nextNode:" + nextNode.key);
+                        console.log("start setExpanded false:" + nextNode.key);
+                        nextNode.setExpanded(false, newOpts);
+                    }
+			    }
+            } else if (callOpts.openHierarchy) {
+                // openHierarchy recursively
+                if (callOpts.openHierarchy.length > 0) {
+                    // extract newNode from hierarchy
+                    console.log("start loading nextId for node:" + node.key 
+                            + " from hierarchy:" + callOpts.openHierarchy);
+                    var nextId = callOpts.openHierarchy.shift();
+                    console.log("got nextId " + nextId + " for node:" + node.key 
+                            + " and new hierarchy:" + callOpts.openHierarchy);
+                    var nextNode = node.mapChildren[nextId];
+                    if (nextNode) {
+                        // everything fine
+                        console.log("got nextNode:" + nextNode.key);
+                        console.log("start openHierarchy:" + nextNode.key);
+                        var newOpts = {};
+                        newOpts.activateLastNode = callOpts.activateLastNode;
+                        newOpts.openHierarchy = callOpts.openHierarchy;
+                        nextNode.setExpanded(true, newOpts);
+                        
+                    } else {
+                        // error: newNode not found
+                        console.error("error: didnt found nextNode:" + nextId 
+                                + " for: " + node.key + " openHierarchy:" + callOpts.openHierarchy);
+                    }
+                } else {
+                    // openHierarchy done
+                    console.log("hierarchy empty: openHierarchy done for all nodes:" + callOpts.openHierarchy);
+                    
+                    // activate me
+                    if (callOpts.activateLastNode) {
+                        console.log("hierarchy empty: set me as focus&Active:" + callOpts.activateLastNode);
+                        node.setActive(true);
+                        node.setFocus(true);
+                    }
+                }
+            } else {
+                // NOP
+            }
 		});
 		// vvv Code below is executed after loading finished:
 		_afterLoad = function(callback){
@@ -3670,7 +3757,8 @@ $.widget("ui.fancytree",
 		},
 		// events
 		lazyLoad: null,
-		postProcess: null
+		postProcess: null,
+		onExpandCallBack: null
 	},
 	/* Set up the widget, Called on first $().fancytree() */
 	_create: function() {
