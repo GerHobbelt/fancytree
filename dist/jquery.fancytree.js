@@ -1,3 +1,10 @@
+(function( factory ) {
+	if ( typeof define === "function" && define.amd ) {
+		define( [ "jquery" ], factory );
+	} else {
+		factory( jQuery );
+	}
+}(function( $ ) {
 /*!
  * jquery.fancytree.js
  * Tree view control with support for lazy loading and much more.
@@ -7,8 +14,8 @@
  * Released under the MIT license
  * https://github.com/mar10/fancytree/wiki/LicenseInfo
  *
- * @version 2.21.0
- * @date 2017-01-15T17:21:28Z
+ * @version 2.21.1
+ * @date 2018-01-25T13:26:11Z
  */
 
 /** Core Fancytree module.
@@ -4273,15 +4280,16 @@ $.extend(Fancytree.prototype,
 		// this.debug("    activeNode: " + this.activeNode);
 		if( flag !== this.hasFocus() ){
 			this._hasFocus = flag;
+			var notCalledByNode = (!callOpts || !callOpts.calledByNode);
 			if( !flag && this.focusNode ) {
 				// Node also looses focus if widget blurs
 				this.focusNode.setFocus(false);
-			} else if ( flag && (!callOpts || !callOpts.calledByNode) ) {
+			} else if ( flag && notCalledByNode) {
 				$(this.$container).focus();
 			}
 			this.$container.toggleClass("fancytree-treefocus", flag);
 			this._triggerTreeEvent(flag ? "focusTree" : "blurTree");
-			if( flag && !this.activeNode ) {
+			if( flag && notCalledByNode && !this.activeNode ) {
 				this.getFirstChild() && this.getFirstChild().setFocus();
 			}
 		}
@@ -4662,7 +4670,7 @@ $.extend($.ui.fancytree,
 	/** @lends Fancytree_Static# */
 	{
 	/** @type {string} */
-	version: "2.21.0",      // Set to semver by 'grunt release'
+	version: "2.21.1",      // Set to semver by 'grunt release'
 	/** @type {string} */
 	buildType: "production", // Set to 'production' by 'grunt build'
 	/** @type {int} */
@@ -5052,3 +5060,5 @@ $.extend($.ui.fancytree,
 });
 
 }(jQuery, window, document));
+
+}));

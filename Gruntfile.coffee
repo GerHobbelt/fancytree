@@ -41,6 +41,24 @@ module.exports = (grunt) ->
     #             ]
 
     concat:
+        core_ion:
+            options:
+                stripBanners: true
+            src: [
+                  "lib/intro.js"
+                  "src/<%= pkg.name %>.js"
+                  "lib/outro.js"
+                  ]
+            dest: "build/<%= pkg.name %>.js"
+        core_ion_min:
+            options:
+                stripBanners: true
+            src: [
+                  "lib/intro.js"
+                  "build/<%= pkg.name %>.min.js"
+                  "lib/outro.js"
+                  ]
+            dest: "build/<%= pkg.name %>.min.js"
         core:
             options:
                 stripBanners: true
@@ -220,6 +238,9 @@ module.exports = (grunt) ->
             "<%= concat.core.dest %>"
             "<%= concat.all.dest %>"
             ]
+        afterConcat_ion: [
+            "<%= concat.core_ion.dest %>"
+            ]            
 
     less:
         development:
@@ -312,7 +333,24 @@ module.exports = (grunt) ->
         #     files:
         #         "build/<%= pkg.name %>.min.js": ["<%= concat.core.dest %>"],
         #         "build/<%= pkg.name %>-all.min.js": ["<%= concat.all.dest %>"]
-
+        core_ion:
+            options:  # see https://github.com/gruntjs/grunt-contrib-uglify/issues/366
+                report: "min"
+                # preserveComments: "some"
+                preserveComments: /(?:^!|@(?:license|preserve|cc_on))/
+            files: [
+              {
+                  src: ["<%= pkg.name %>.js"]
+                  cwd: "src/"
+                  dest: "build/"
+                  expand: true
+                  rename: (dest, src) ->
+                      folder = src.substring(0, src.lastIndexOf("/"))
+                      filename = src.substring(src.lastIndexOf("/"), src.length)
+                      filename  = filename.substring(0, filename.lastIndexOf("."))
+                      return dest + folder + filename + ".min.js"
+              }
+              ]
         custom:
             options:  # see https://github.com/gruntjs/grunt-contrib-uglify/issues/366
                 report: "min"
@@ -423,6 +461,18 @@ module.exports = (grunt) ->
       # "uglify:build"
       "qunit:build"
       ]
+
+  grunt.registerTask "build_ion", [
+      "less:development"
+      "test"
+      "clean:build"
+      "copy:build"
+      "concat:core_ion"
+      "jshint:afterConcat_ion"
+      "uglify:core_ion"
+      "concat:core_ion_min"      
+      "replace:production"
+      ]
   
   grunt.registerTask "make_release", [
       "exec:tabfix"
@@ -433,6 +483,15 @@ module.exports = (grunt) ->
       "replace:release"
       # "compress:dist"
       ]
+
+  grunt.registerTask "make_release_ion", [
+      "build_ion"
+      "clean:dist"
+      "copy:dist"
+      "clean:build"
+      "replace:release"
+      # "compress:dist"
+      ]      
 
   grunt.registerTask "upload", [
       "build"

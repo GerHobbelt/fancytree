@@ -9,8 +9,8 @@
  * Released under the MIT license
  * https://github.com/mar10/fancytree/wiki/LicenseInfo
  *
- * @version 2.21.0
- * @date 2017-01-15T17:21:28Z
+ * @version 2.21.1
+ * @date 2018-01-25T13:26:11Z
  */
 
 
@@ -263,7 +263,7 @@ function handleDragOver(event, data) {
 
 $.ui.fancytree.registerExtension({
 	name: "dnd5",
-	version: "2.21.0",
+	version: "2.21.1",
 	// Default options for this extension.
 	options: {
 		autoExpandMS: 1500,          // Expand nodes after n milliseconds of hovering
