@@ -4273,15 +4273,16 @@ $.extend(Fancytree.prototype,
 		// this.debug("    activeNode: " + this.activeNode);
 		if( flag !== this.hasFocus() ){
 			this._hasFocus = flag;
+			var notCalledByNode = (!callOpts || !callOpts.calledByNode);
 			if( !flag && this.focusNode ) {
 				// Node also looses focus if widget blurs
 				this.focusNode.setFocus(false);
-			} else if ( flag && (!callOpts || !callOpts.calledByNode) ) {
+			} else if ( flag && notCalledByNode) {
 				$(this.$container).focus();
 			}
 			this.$container.toggleClass("fancytree-treefocus", flag);
 			this._triggerTreeEvent(flag ? "focusTree" : "blurTree");
-			if( flag && !this.activeNode ) {
+			if( flag && notCalledByNode && !this.activeNode ) {
 				this.getFirstChild() && this.getFirstChild().setFocus();
 			}
 		}
