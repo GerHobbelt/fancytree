@@ -1,5 +1,5 @@
-# 2.22.0-0 / Unreleased
-  * [Added] New extension 'ext-fixed'
+# 2.21.1 / Unreleased
+  * [Fixed] Properly fixing https://github.com/mar10/fancytree/issues/712
 
 # 2.21.0 / 2017-01-15
   * [Added] New extension 'ext-dnd5' for native HTML5 drag'n'drop support
