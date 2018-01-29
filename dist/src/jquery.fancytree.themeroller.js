@@ -11,8 +11,8 @@
  * Released under the MIT license
  * https://github.com/mar10/fancytree/wiki/LicenseInfo
  *
- * @version 2.21.1
- * @date 2018-01-25T13:26:11Z
+ * @version 2.21.0
+ * @date 2017-01-15T17:21:28Z
  */
 
 ;(function($, window, document, undefined) {
@@ -24,7 +24,7 @@
  */
 $.ui.fancytree.registerExtension({
 	name: "themeroller",
-	version: "2.21.1",
+	version: "2.21.0",
 	// Default options for this extension.
 	options: {
 		activeClass: "ui-state-active",      // Class added to active node
