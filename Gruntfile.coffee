@@ -55,7 +55,7 @@ module.exports = (grunt) ->
                 stripBanners: true
             src: [
                 "<%= meta.banner %>"
-                # "lib/intro.js"
+                "lib/intro.js"
                 "src/jquery.fancytree.js"
                 "src/jquery.fancytree.childcounter.js"
                 "src/jquery.fancytree.clones.js"
@@ -70,7 +70,7 @@ module.exports = (grunt) ->
                 "src/jquery.fancytree.table.js"
                 "src/jquery.fancytree.themeroller.js"
                 "src/jquery.fancytree.wide.js"
-                # "lib/outro.js"
+                "lib/outro.js"
                 ]
             dest: "build/<%= pkg.name %>-all.js"
         custom:
@@ -433,6 +433,15 @@ module.exports = (grunt) ->
       "replace:release"
       # "compress:dist"
       ]
+
+  grunt.registerTask "make_release_ion", [
+      "build"
+      "clean:dist"
+      "copy:dist"
+      "clean:build"
+      "replace:release"
+      # "compress:dist"
+      ]      
 
   grunt.registerTask "upload", [
       "build"
